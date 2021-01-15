@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <v-main>
+          <v-row>
+              <v-col cols="12" md="6" v-for="(item,index) in entradas" ::key="index" >
+                <v-card>
+                    <v-card-title>{{item.title}}</v-card-title>
+                    <v-card-subtitle>{{item.id}}</v-card-subtitle>
+                    <v-card-text>{{item.body}}</v-card-text>
+  
+                </v-card>
+              </v-col>
+          </v-row>
+      </v-main>
+
+      <v-main>
+          <v-btn @click="Siguientes" :disabled="activo">Siguientes...</v-btn>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.5.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.5.2/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.2.3/firebase-app.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyANhx4f2F4IEt3bVIXM6arqJfFPYpkua8I",
+    authDomain: "vue-js-firebase-quasar.firebaseapp.com",
+    projectId: "vue-js-firebase-quasar",
+    storageBucket: "vue-js-firebase-quasar.appspot.com",
+    messagingSenderId: "628455078147",
+    appId: "1:628455078147:web:6d71552302803df4e21136"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestone();
+
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data:{
+          entradas:[],
+          last: null,
+          activo:null
+      },
+      methods: {
+          leerDatos(){
+              db.collection('tarea')
+              .limit(2)
+              .ordenby('id')
+              .get()
+              .then(query => {
+                  query.forEach(item => {
+                      this.last = queryt.docs[query.docs.length - 1];
+                      this.entradas.push(item.data())
+                     
+                  })
+              })
+          }
+      },
+      siguientes(){
+        db.collection('tareas')
+        .limit(2)
+        .ordenby('id')
+        .startAfter(this.last)
+        .get()
+        .then(query => {
+            query.forEach(item => {
+                this.entradas.push(item.data())
+            })
+        })
+        .then(() => {
+            db.collection('tareas')
+            .limit(2)
+            .ordenby('id')
+            .startAfter(this.last)
+            .get()
+            .then(query => {
+                if(query.empty){
+                    this.activo = true;
+                }
+            })
+        }) 
+      },
+      created() {
+          this.leerDatos()
+      },
+    })
+  </script>
+</body>
+</html>
